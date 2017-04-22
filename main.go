@@ -133,7 +133,7 @@ func main() {
 	r.Use(gzip.Gzip(gzip.BestSpeed))
 
 	r.GET("/stations", stationsHandler)
-	r.GET("/stations/:contractName/:stationNumber/:date/availability-infos", stationsAvailabilityInfosHandler)
+	r.GET("/stations/:contractName/:stationNumber//availability/:date", stationsAvailabilityInfosHandler)
 
 	r.Run() // listen and serve on 0.0.0.0:8080
 }
@@ -151,7 +151,6 @@ func stationsHandler(c *gin.Context) {
 	lat, _ := strconv.ParseFloat(c.Query("lat"), 64)
 	lng, _ := strconv.ParseFloat(c.Query("lng"), 64)
 	distance, _ := strconv.ParseFloat(c.DefaultQuery("distance", "5000"), 64)
-
 
 	log.Println(fmt.Printf("contractName: %v\n", contractName))
 	log.Println(fmt.Printf("numbers: %v\n", numbers))
