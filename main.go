@@ -127,21 +127,21 @@ func stationsHandler(c *gin.Context) {
 	distance, _ := strconv.ParseFloat(c.DefaultQuery("distance", "5000"), 64)
 
 
-	log.Println(fmt.Printf("contractName: %v\n", contractName))
-	log.Println(fmt.Printf("numbers: %v\n", numbers))
-	log.Println(fmt.Printf("len(numbers): %v\n", len(numbers)))
-	log.Println(fmt.Printf("lat: %v\n", lat))
-	log.Println(fmt.Printf("lng: %v\n", lng))
-	log.Println(fmt.Printf("distance: %v\n", distance))
+//	log.Println(fmt.Printf("contractName: %v\n", contractName))
+//	log.Println(fmt.Printf("numbers: %v\n", numbers))
+//	log.Println(fmt.Printf("len(numbers): %v\n", len(numbers)))
+//	log.Println(fmt.Printf("lat: %v\n", lat))
+//	log.Println(fmt.Printf("lng: %v\n", lng))
+//	log.Println(fmt.Printf("distance: %v\n", distance))
 
 	if len(numbers) > 0 {
-		log.Println(fmt.Printf("Station search type: findByNumbers (contract-name: %v , number: %v)\n", contractName, numbers))
+//		log.Println(fmt.Printf("Station search type: findByNumbers (contract-name: %v , number: %v)\n", contractName, numbers))
 		c.JSON(http.StatusOK, findByNumbers(contractName, numbers))
 	} else if lat != 0 && lng != 0 {
-		log.Println(fmt.Printf("Station search type: findNearby (contract-name: %v, lat: %v, lng: %v, distance: %v)\n", contractName, lat, lng, distance))
+//		log.Println(fmt.Printf("Station search type: findNearby (contract-name: %v, lat: %v, lng: %v, distance: %v)\n", contractName, lat, lng, distance))
 		c.JSON(http.StatusOK, findNearby(contractName, lat, lng, distance))
 	} else {
-		log.Println(fmt.Printf("Station search type: findByContractName (contract-name: %v)\n", contractName))
+//		log.Println(fmt.Printf("Station search type: findByContractName (contract-name: %v)\n", contractName))
 		c.JSON(http.StatusOK, findByContractName(contractName))
 	}
 }
@@ -154,9 +154,9 @@ func stationsAvailabilityInfosHandler(c *gin.Context) {
 	date, _ := time.Parse("20060102-1504" , c.Param("date"))
 	stationNumber := c.Param("stationNumber")
 
-	log.Println(fmt.Printf("contractName: %v\n", contractName))
-	log.Println(fmt.Printf("date: %v\n", date))
-	log.Println(fmt.Printf("stationNumber: %v\n", stationNumber))
+//	log.Println(fmt.Printf("contractName: %v\n", contractName))
+//	log.Println(fmt.Printf("date: %v\n", date))
+//	log.Println(fmt.Printf("stationNumber: %v\n", stationNumber))
 
 	c.JSON(http.StatusOK, fetchInfluxDbDataByDateAndStationNumber(contractName, date, stationNumber, 60))
 }
@@ -174,7 +174,7 @@ func findNearby(contractName string, lat float64, lng float64, distance float64)
 		return contractName + "_" + number
 	})
 
-	log.Println(fmt.Printf("keys: %v", keys))
+//	log.Println(fmt.Printf("keys: %v", keys))
 
 	keysFiltered := FilterString(keys, func(v string) bool {
 		return v != contractName + "_images"
@@ -197,7 +197,7 @@ func findByNumbers(contractName string, numbers []string) []Station {
 		return contractName + "_" + number
 	})
 
-	log.Println(fmt.Printf("keys: %v", keys))
+//	log.Println(fmt.Printf("keys: %v", keys))
 
 	keysFiltered := FilterString(keys, func(v string) bool {
 		return v != contractName + "_images"
@@ -214,7 +214,7 @@ func findByContractName(contractName string) []Station {
 
 	keys := cli.Keys(contractName + "_*").Val()
 
-	log.Println(fmt.Printf("keys: %v", keys))
+//	log.Println(fmt.Printf("keys: %v", keys))
 
 	keysFiltered := FilterString(keys, func(v string) bool {
 		return v != contractName + "_images"
@@ -237,7 +237,7 @@ func fetchInfluxDbDataByDateAndStationNumber(contractName string, date time.Time
 		dateFormatted,
 		dateFormatted,
 	)
-	log.Println(fmt.Printf("query: %v", query))
+//	log.Println(fmt.Printf("query: %v", query))
 
 	results, err := queryDB(influx, dbDatabase, query)
 	if err != nil {
@@ -245,25 +245,25 @@ func fetchInfluxDbDataByDateAndStationNumber(contractName string, date time.Time
 		log.Fatal(err)
 	}
 
-	log.Println(fmt.Printf("results: %v\n", results))
+//	log.Println(fmt.Printf("results: %v\n", results))
 
 	if len(results) <= 0 {
 		return []StationBikeState{}
 	}
 
-	log.Println(fmt.Printf("results[0]: %v\n", results[0]))
+//	log.Println(fmt.Printf("results[0]: %v\n", results[0]))
 
 	if len(results[0].Series) <= 0 {
 		return []StationBikeState{}
 	}
 
-	log.Println(fmt.Printf("results[0].Series[0]: %v\n", results[0].Series[0]))
+//	log.Println(fmt.Printf("results[0].Series[0]: %v\n", results[0].Series[0]))
 
 	if len(results[0].Series[0].Values) <= 0 {
 		return []StationBikeState{}
 	}
 
-	log.Println(fmt.Printf("results[0].Series[0].Values: %v\n", results[0].Series[0].Values))
+//	log.Println(fmt.Printf("results[0].Series[0].Values: %v\n", results[0].Series[0].Values))
 
 	points := results[0].Series[0].Values
 
@@ -342,8 +342,8 @@ func FilterStationBikeStatesByModulus(vs []StationBikeState, modulus int) []Stat
 func MapPointsToStationBikeStates(vs [][]interface{}) []StationBikeState {
 	vsm := make([]StationBikeState, len(vs))
 	for i, v := range vs {
-		log.Println(fmt.Printf("v: %v\n", v))
-		log.Println(fmt.Printf("v[1]: %v\n", v[1]))
+//		log.Println(fmt.Printf("v: %v\n", v))
+//		log.Println(fmt.Printf("v[1]: %v\n", v[1]))
 
 		t := v[0].(string)
 		availableBikeStands, _ := v[1].(json.Number).Int64()

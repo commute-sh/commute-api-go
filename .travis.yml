@@ -1,6 +1,8 @@
 language: go
 go:
 - 1.8.1
+script:
+- CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 services:
 - docker
 notifications:
