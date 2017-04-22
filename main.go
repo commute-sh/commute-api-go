@@ -1,4 +1,13 @@
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Package
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 package main
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Imports
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 import(
 	"fmt"
@@ -19,14 +28,20 @@ import(
 // Redis
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+var redisHost = GetEnvOrDefault("REDIS_HOST", "localhost")
+var redisPort = GetEnvOrDefault("REDIS_PORT", "6379")
+
+var redisAddr = fmt.Sprintf("%s:%s", redisHost, redisPort )
+
 // Open a connection to Redis
 var cli = redis.NewClient(&redis.Options{
-	Addr: fmt.Sprintf(
-		"%s:%s",
-		os.Getenv("REDIS_HOST"),
-		os.Getenv("REDIS_PORT"),
-	),
+	Addr: redisAddr,
 })
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// InfluxDB
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var dbProtocol = GetEnvOrDefault("DB_PROTOCOL", "http")
 
@@ -36,14 +51,11 @@ var dbUser = GetEnvOrDefault("DB_USER", "commute")
 var dbPassword = GetEnvOrDefault("DB_PASSWORD","commute")
 var dbDatabase = GetEnvOrDefault("DB_DATABASE", "commute")
 
+var dbAddress = fmt.Sprintf("%s://%s:%s", dbProtocol, dbHost, dbPort)
+
 // Create a new HTTPClient
 var influx, influxCliErr = client.NewHTTPClient(client.HTTPConfig{
-	Addr: fmt.Sprintf(
-		"%s://%s:%s",
-		dbProtocol,
-		dbHost,
-		dbPort,
-	),
+	Addr: dbAddress,
 	Username: dbUser,
 	Password: dbPassword,
 })
@@ -92,6 +104,18 @@ type StationBikeState struct {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 func main() {
+
+	log.Println(fmt.Printf("REDIS_HOST: %v\n", dbHost))
+	log.Println(fmt.Printf("REDIS_PORT: %v\n", dbPort))
+	log.Println(fmt.Printf("REDIS_ADDRESS: %v\n", dbAddress))
+
+	log.Println(fmt.Printf("DB_HOST: %v\n", dbHost))
+	log.Println(fmt.Printf("DB_PORT: %v\n", dbPort))
+	log.Println(fmt.Printf("DB_USER: %v\n", dbUser))
+	log.Println("DB_PASSWORD: ********")
+	log.Println(fmt.Printf("DB_DATABASE: %v\n", dbPassword))
+	log.Println(fmt.Printf("DB_ADDRESS: %v\n", dbAddress))
+
 	defer cli.Close()
 
 	if influxCliErr != nil {
@@ -127,21 +151,21 @@ func stationsHandler(c *gin.Context) {
 	distance, _ := strconv.ParseFloat(c.DefaultQuery("distance", "5000"), 64)
 
 
-//	log.Println(fmt.Printf("contractName: %v\n", contractName))
-//	log.Println(fmt.Printf("numbers: %v\n", numbers))
-//	log.Println(fmt.Printf("len(numbers): %v\n", len(numbers)))
-//	log.Println(fmt.Printf("lat: %v\n", lat))
-//	log.Println(fmt.Printf("lng: %v\n", lng))
-//	log.Println(fmt.Printf("distance: %v\n", distance))
+	log.Println(fmt.Printf("contractName: %v\n", contractName))
+	log.Println(fmt.Printf("numbers: %v\n", numbers))
+	log.Println(fmt.Printf("len(numbers): %v\n", len(numbers)))
+	log.Println(fmt.Printf("lat: %v\n", lat))
+	log.Println(fmt.Printf("lng: %v\n", lng))
+	log.Println(fmt.Printf("distance: %v\n", distance))
 
 	if len(numbers) > 0 {
-//		log.Println(fmt.Printf("Station search type: findByNumbers (contract-name: %v , number: %v)\n", contractName, numbers))
+		log.Println(fmt.Printf("Station search type: findByNumbers (contract-name: %v , number: %v)\n", contractName, numbers))
 		c.JSON(http.StatusOK, findByNumbers(contractName, numbers))
 	} else if lat != 0 && lng != 0 {
-//		log.Println(fmt.Printf("Station search type: findNearby (contract-name: %v, lat: %v, lng: %v, distance: %v)\n", contractName, lat, lng, distance))
+		log.Println(fmt.Printf("Station search type: findNearby (contract-name: %v, lat: %v, lng: %v, distance: %v)\n", contractName, lat, lng, distance))
 		c.JSON(http.StatusOK, findNearby(contractName, lat, lng, distance))
 	} else {
-//		log.Println(fmt.Printf("Station search type: findByContractName (contract-name: %v)\n", contractName))
+		log.Println(fmt.Printf("Station search type: findByContractName (contract-name: %v)\n", contractName))
 		c.JSON(http.StatusOK, findByContractName(contractName))
 	}
 }
@@ -154,9 +178,9 @@ func stationsAvailabilityInfosHandler(c *gin.Context) {
 	date, _ := time.Parse("20060102-1504" , c.Param("date"))
 	stationNumber := c.Param("stationNumber")
 
-//	log.Println(fmt.Printf("contractName: %v\n", contractName))
-//	log.Println(fmt.Printf("date: %v\n", date))
-//	log.Println(fmt.Printf("stationNumber: %v\n", stationNumber))
+	log.Println(fmt.Printf("contractName: %v\n", contractName))
+	log.Println(fmt.Printf("date: %v\n", date))
+	log.Println(fmt.Printf("stationNumber: %v\n", stationNumber))
 
 	c.JSON(http.StatusOK, fetchInfluxDbDataByDateAndStationNumber(contractName, date, stationNumber, 60))
 }
@@ -168,7 +192,9 @@ func stationsAvailabilityInfosHandler(c *gin.Context) {
 
 func findNearby(contractName string, lat float64, lng float64, distance float64) []Station {
 
-	geoLocations := cli.GeoRadius(contractName + "_stations", lng, lat, &redis.GeoRadiusQuery{ Radius: 100, Unit: "km", WithDist: true, Sort: "ASC" }).Val()
+	var distanceInKm = distance / 1000
+
+	geoLocations := cli.GeoRadius(contractName + "_stations", lng, lat, &redis.GeoRadiusQuery{ Radius: distanceInKm, Unit: "km", WithDist: true, Sort: "ASC" }).Val()
 
 	keys := MapStringsToStrings(MapGeoLocationsToStationNumbers(geoLocations), func(number string) string {
 		return contractName + "_" + number
@@ -237,7 +263,7 @@ func fetchInfluxDbDataByDateAndStationNumber(contractName string, date time.Time
 		dateFormatted,
 		dateFormatted,
 	)
-//	log.Println(fmt.Printf("query: %v", query))
+	log.Println(fmt.Printf("query: %v", query))
 
 	results, err := queryDB(influx, dbDatabase, query)
 	if err != nil {
