@@ -18,9 +18,10 @@ import(
 	"strings"
 	"encoding/json"
 	"net/http"
-	"gopkg.in/gin-gonic/gin.v1"
+	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
 	"github.com/influxdata/influxdb/client/v2"
+	"github.com/gin-contrib/gzip"
 )
 
 
@@ -129,6 +130,7 @@ func main() {
 	// Global middleware
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
+	r.Use(gzip.Gzip(gzip.BestSpeed))
 
 	r.GET("/stations", stationsHandler)
 	r.GET("/stations/:contractName/:stationNumber/:date/availability-infos", stationsAvailabilityInfosHandler)
