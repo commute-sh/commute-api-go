@@ -6,7 +6,7 @@ services:
 notifications:
   slack:
     secure: efRXLuRRc231GlETfsQBqSFclpbn/JR6qpLgi9IuJyquPdTkg4YXFYQKfWpXCmrb1B2nK2II9iEzFVoxl2muaBIbl8a4nyzGiuOcdhuSRCZdzyXtp+gubjuOumbz5Vwq8i7tR1vlk+tMVN5Q0Lb3iebQaSENeLwlbHknpHjLBqEfnODlpC9rFM4KD/NNbXIQJVfh3gPn2CBsgN3hF+wzDmAW5BWDWWPHI84GJgPR2qX9hsbSGmfiyTsxucI41JOrFj+q5LKFOXGfvKn2W+83SzuW+LLkt4BWObc//2buNWy55VmqyjihqPipj0CcNMV+dUoAzILHpg6oLut4JhIwfhDikNbLbUuSFpPPRCsOgNnnoXghhu/UnJ70OWqKd80Wwk8PT/At8T9y2dasAgvhpjIY/FRxcp2WTdBTsZVfFq5Vji5ZY+vgh8zlKGWAjRErYt4bwIjIminn8kvZ+QJoITQGxk6t0sxF7F6fGDQIrXideBSpslOr5nctcbLcL3drYYiFrDGt9RGYW5jSrw322chYQp39OMj44PdlIy32I8lMJbhhY8LdsPr1m8bBTRJdGPByml0ZTTzvadJI8BO3s7NVqFGZDaf3M6mblqSGkorYLf/EaYNwQ7IDn6ctPbM6xLaYpYklaJpV6aY0pBQ16KNIn0LAVbsCDMutL6ylMuY=
-    after_success:
+after_success:
 - docker login --email=$DOCKER_HUB_EMAIL --username=$DOCKER_HUB_USERNAME --password=$DOCKER_HUB_PASSWORD
 - export TAG=`if [ "$TRAVIS_TAG" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH
   ; fi`
